@@ -28,4 +28,49 @@ class Reversi {
         this.grid[Reversi.GRID_SIZE / 2][Reversi.GRID_SIZE / 2 - 1] = Reversi.SQUARE_STATE.white;
         this.grid[Reversi.GRID_SIZE / 2][Reversi.GRID_SIZE / 2] = Reversi.SQUARE_STATE.black;
     }
+
+    // Places a disk on (x, y) and flips other disks accordingly.
+    // Returns true if you can place a disk on (x, y), otherwise false.
+    placeDisk(turn, x, y) {
+        if (!this.isInGrid(x, y) || this.grid[x][y] != Reversi.SQUARE_STATE.vacant) {
+            return false;
+        }
+
+        // This becomes true when at least one disk is flipped
+        let canPlaceDisk = false;
+
+        for (let dx = -1; dx <= 1; ++dx) {
+            for (let dy = -1; dy <= 1; ++dy) {
+                if (dx == 0 && dy == 0) {
+                    continue;
+                }
+
+                for (let i = 1; this.isInGrid(x + i * dx, y + i * dy); ++i) {
+                    if (this.grid[x + i * dx][y + i * dy] == Reversi.SQUARE_STATE.vacant) {
+                        break;
+                    } else if (this.grid[x + i * dx][y + i * dy] == turn) {
+                        // Flip the disks between (x, y) and (x+i*dx, y+i*dy)
+                        if (i > 1) {
+                            for (let j = 1; j < i; ++j) {
+                                this.grid[x + j * dx][y + j * dy] = turn;
+                            }
+                            canPlaceDisk = true;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (canPlaceDisk) {
+            this.grid[x][y] = turn;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    isInGrid(x, y) {
+        return x >= 0 && x < Reversi.GRID_SIZE && y >= 0 && y < Reversi.GRID_SIZE;
+    }
 }
