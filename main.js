@@ -44,32 +44,24 @@ function renderGrid() {
     }
 }
 
-async function onClickSquare(x, y) {
-    await new Promise((resolve, reject) => {
-        if (reversi.placesDisk(Reversi.TURN.player, x, y)) {
-            renderGrid();
-            resolve();
-        } else {
-            showMessage("Cannot place a disk here.");
-            reject();
-        }
-    });
-    await new Promise((resolve, reject) => {
-        showMessage("Computer is thinking...");
-        setTimeout(() => {
-            if (reversi.computerPlacesDisk()) {
-                renderGrid();
-                resolve();
-            } else {
-                showMessage("Computer passed.");
-                reject();
-            }
-        }, /* timeout = */ 500);
-    });
+function onClickSquare(x, y) {
+    if (!reversi.placesDisk(Reversi.TURN.player, x, y)) {
+        showMessage("Cannot place a disk here.");
+        return;
+    }
+
+    renderGrid();
+    showMessage("Computer is thinking...");
+
+    if (!reversi.computerPlacesDisk()) {
+        showMessage("Computer passed.");
+        return;
+    }
+
+    renderGrid();
     showMessage("It's your turn!");
 }
 
 function showMessage(message) {
     const messageElement = document.querySelector(".message");
     messageElement.innerHTML = message;
-}
