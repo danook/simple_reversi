@@ -3,6 +3,7 @@ const reversi = new Reversi()
 window.addEventListener('DOMContentLoaded', e => {
     createGrid();
     renderGrid();
+    updateScoreBoard();
     showMessage("It's your turn!");
 });
 
@@ -44,10 +45,35 @@ function renderGrid() {
     }
 }
 
+function updateScoreBoard() {
+    let blackScore = 0;
+    let whiteScore = 0;
+    for (let x = 0; x < Reversi.GRID_SIZE; ++x) {
+        for (let y = 0; y < Reversi.GRID_SIZE; ++y) {
+            switch (reversi.grid[x][y]) {
+                case Reversi.SQUARE_STATE.black:
+                    ++blackScore;
+                    break;
+                case Reversi.SQUARE_STATE.white:
+                    ++whiteScore;
+                    break;
+                case Reversi.SQUARE_STATE.vacant:
+            }
+        }
+    }
+
+    const blackScoreElement = document.querySelector("#black_score");
+    const whiteScoreElement = document.querySelector("#white_score");
+
+    blackScoreElement.innerHTML = `${blackScore}`;
+    whiteScoreElement.innerHTML = `${whiteScore}`;
+}
+
 async function onClickSquare(x, y) {
     await new Promise((resolve, reject) => {
         if (reversi.placesDisk(Reversi.TURN.player, x, y)) {
             renderGrid();
+            updateScoreBoard();
             resolve();
         } else {
             showMessage("Cannot place a disk here.");
@@ -59,6 +85,7 @@ async function onClickSquare(x, y) {
         setTimeout(() => {
             if (reversi.computerPlacesDisk()) {
                 renderGrid();
+                updateScoreBoard();
                 resolve();
             } else {
                 showMessage("Computer passed.");
