@@ -65,4 +65,3 @@ function onClickSquare(x, y) {
 function showMessage(message) {
     const messageElement = document.querySelector(".message");
     messageElement.innerHTML = message;
-}
