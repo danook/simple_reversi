@@ -46,54 +46,42 @@ function renderGrid() {
 }
 
 function updateScoreBoard() {
-    let blackScore = 0;
-    let whiteScore = 0;
-    for (let x = 0; x < Reversi.GRID_SIZE; ++x) {
-        for (let y = 0; y < Reversi.GRID_SIZE; ++y) {
-            switch (reversi.grid[x][y]) {
-                case Reversi.SQUARE_STATE.black:
-                    ++blackScore;
-                    break;
-                case Reversi.SQUARE_STATE.white:
-                    ++whiteScore;
-                    break;
-                case Reversi.SQUARE_STATE.vacant:
-            }
-        }
-    }
-
     const blackScoreElement = document.querySelector("#black_score");
     const whiteScoreElement = document.querySelector("#white_score");
 
-    blackScoreElement.innerHTML = `${blackScore}`;
-    whiteScoreElement.innerHTML = `${whiteScore}`;
+    blackScoreElement.innerHTML = `${reversi.blackScore}`;
+    whiteScoreElement.innerHTML = `${reversi.whiteScore}`;
 }
 
 async function onClickSquare(x, y) {
-    await new Promise((resolve, reject) => {
-        if (reversi.placesDisk(Reversi.TURN.player, x, y)) {
-            renderGrid();
-            updateScoreBoard();
-            resolve();
-        } else {
-            showMessage("Cannot place a disk here.");
-            reject();
-        }
-    });
-    await new Promise((resolve, reject) => {
-        showMessage("Computer is thinking...");
+    if (reversi.currentTurn != Reversi.TURN.player) {
+        return;
+    }
+
+    if (!reversi.playerPlacesDisk(x, y)) {
+        showMessage("Cannot place a disk here.");
+        return;
+    }
+
+    updateScoreBoard();
+    renderGrid();
+    showMessage("Computer is thinking...");
+
+    const computerPlacesDiskResult = await new Promise((resolve, reject) => {
         setTimeout(() => {
-            if (reversi.computerPlacesDisk()) {
-                renderGrid();
-                updateScoreBoard();
-                resolve();
-            } else {
-                showMessage("Computer passed.");
-                reject();
-            }
+            resolve(reversi.computerPlacesDisk());
         }, /* timeout = */ 500);
     });
+
+    if (!computerPlacesDiskResult) {
+        showMessage("Computer passed.");
+        return;
+    }
+
+    updateScoreBoard();
+    renderGrid();
     showMessage("It's your turn!");
+    return;
 }
 
 function showMessage(message) {
