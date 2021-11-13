@@ -45,8 +45,26 @@ class Reversi {
             return false;
         }
 
-        // This becomes true when at least one disk is flipped
-        let canPlaceDisk = false;
+        const disksToReverse = this.getDisksToReverse(turn, x, y);
+        if (disksToReverse.length == 0) {
+            return false;
+        }
+
+        this.grid[x][y] = turn;
+        for (const disk of disksToReverse) {
+            this.grid[disk.x][disk.y] = turn;
+        }
+        return true;
+    }
+
+    // Returns an array of coordinate (x, y) of disks to reverse
+    getDisksToReverse(turn, x, y) {
+
+        let disksToReverse = new Array();
+
+        if (!this.isInGrid(x, y) || this.grid[x][y] != Reversi.SQUARE_STATE.vacant) {
+            return disksToReverse;
+        }
 
         for (let dx = -1; dx <= 1; ++dx) {
             for (let dy = -1; dy <= 1; ++dy) {
@@ -61,9 +79,11 @@ class Reversi {
                         // Flip the disks between (x, y) and (x+i*dx, y+i*dy)
                         if (i > 1) {
                             for (let j = 1; j < i; ++j) {
-                                this.grid[x + j * dx][y + j * dy] = turn;
+                                disksToReverse.push({
+                                    x: x + j * dx,
+                                    y: y + j * dy
+                                });
                             }
-                            canPlaceDisk = true;
                         }
                         break;
                     }
@@ -71,12 +91,22 @@ class Reversi {
             }
         }
 
-        if (canPlaceDisk) {
-            this.grid[x][y] = turn;
-            return true;
-        } else {
-            return false;
+        return disksToReverse;
+    }
+
+    // Tries to pass the turn.
+    // If cannot (i.e. you can place a disk), returns false and does nothing.
+    tryToPass(turn) {
+        for (let x = 0; x < Reversi.GRID_SIZE; ++x) {
+            for (let y = 0; y < Reversi.GRID_SIZE; ++y) {
+                if (this.getDisksToReverse(turn, x, y).length > 0) {
+                    return false;
+                }
+            }
         }
+
+        this.currentTurn = -turn;
+        return true;
     }
 
     // Player places a disk.
@@ -94,12 +124,12 @@ class Reversi {
     // Returns true if it can place a disk, otherwise false.
     computerPlacesDisk() {
         const [x, y] = this.getsSquareToPlaceDisk();
+        this.currentTurn = Reversi.TURN.player;
         if (x === -1 && y === -1) {
             return false;
         }
 
         this.updateScores();
-        this.currentTurn = Reversi.TURN.player;
         return true;
     }
 

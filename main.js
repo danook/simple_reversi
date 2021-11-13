@@ -4,6 +4,10 @@ window.addEventListener('DOMContentLoaded', e => {
     createGrid();
     renderGrid();
     updateScoreBoard();
+
+    document.querySelector(".pass_button").addEventListener(
+        "click", e => onClickPassButton());
+
     showMessage("It's your turn!");
 });
 
@@ -67,6 +71,35 @@ async function onClickSquare(x, y) {
     renderGrid();
     showMessage("Computer is thinking...");
 
+    const computerPlacesDiskResult = await new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(reversi.computerPlacesDisk());
+        }, /* timeout = */ 500);
+    });
+
+    if (!computerPlacesDiskResult) {
+        showMessage("Computer passed.");
+        return;
+    }
+
+    updateScoreBoard();
+    renderGrid();
+    showMessage("It's your turn!");
+    return;
+}
+
+async function onClickPassButton() {
+    if (reversi.currentTurn != Reversi.TURN.player) {
+        return;
+    }
+    if (!reversi.tryToPass(Reversi.TURN.player)) {
+        showMessage("Cannot pass.");
+        return;
+    }
+
+    showMessage("Passed.");
+
+    // TODO: Omit this redundant code?
     const computerPlacesDiskResult = await new Promise((resolve, reject) => {
         setTimeout(() => {
             resolve(reversi.computerPlacesDisk());
