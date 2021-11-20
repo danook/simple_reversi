@@ -23,66 +23,60 @@ class Reversi {
         // If this is true, no user action is accepted
         this.isFinished = false;
 
-        this.blackScore = 0;
-        this.whiteScore = 0;
-
         this.grid = new Array(Reversi.GRID_SIZE);
         for (let i = 0; i < Reversi.GRID_SIZE; i++) {
             this.grid[i] = new Array(Reversi.GRID_SIZE).fill(Reversi.SQUARE_STATE.vacant);
         }
 
         // Initialize the grid
-        console.log(this.grid[4][4]);
         this.grid[Reversi.GRID_SIZE / 2 - 1][Reversi.GRID_SIZE / 2 - 1] = Reversi.SQUARE_STATE.black;
         this.grid[Reversi.GRID_SIZE / 2 - 1][Reversi.GRID_SIZE / 2] = Reversi.SQUARE_STATE.white;
         this.grid[Reversi.GRID_SIZE / 2][Reversi.GRID_SIZE / 2 - 1] = Reversi.SQUARE_STATE.white;
         this.grid[Reversi.GRID_SIZE / 2][Reversi.GRID_SIZE / 2] = Reversi.SQUARE_STATE.black;
-
-        this.updateScores();
     }
 
     // Places a disk on (x, y) and flips other disks accordingly.
     // Returns true if you can place a disk on (x, y), otherwise false.
     placeDisk(turn, x, y) {
-        if (!this.isInGrid(x, y) || this.grid[x][y] != Reversi.SQUARE_STATE.vacant) {
+        if (!this.isInGrid(x, y) || this.grid[x][y] !== Reversi.SQUARE_STATE.vacant) {
             return false;
         }
 
-        const disksToReverse = this.getDisksToReverse(turn, x, y);
-        if (disksToReverse.length == 0) {
+        const disksToFlip = this.getDisksToFlip(turn, x, y);
+        if (disksToFlip.length === 0) {
             return false;
         }
 
         this.grid[x][y] = turn;
-        for (const disk of disksToReverse) {
+        for (const disk of disksToFlip) {
             this.grid[disk.x][disk.y] = turn;
         }
         return true;
     }
 
-    // Returns an array of coordinate (x, y) of disks to reverse
-    getDisksToReverse(turn, x, y) {
+    // Returns an array of coordinate (x, y) of disks to flip
+    getDisksToFlip(turn, x, y) {
 
-        let disksToReverse = new Array();
+        let disksToFlip = new Array();
 
-        if (!this.isInGrid(x, y) || this.grid[x][y] != Reversi.SQUARE_STATE.vacant) {
-            return disksToReverse;
+        if (!this.isInGrid(x, y) || this.grid[x][y] !== Reversi.SQUARE_STATE.vacant) {
+            return disksToFlip;
         }
 
         for (let dx = -1; dx <= 1; ++dx) {
             for (let dy = -1; dy <= 1; ++dy) {
-                if (dx == 0 && dy == 0) {
+                if (dx === 0 && dy === 0) {
                     continue;
                 }
 
                 for (let i = 1; this.isInGrid(x + i * dx, y + i * dy); ++i) {
-                    if (this.grid[x + i * dx][y + i * dy] == Reversi.SQUARE_STATE.vacant) {
+                    if (this.grid[x + i * dx][y + i * dy] === Reversi.SQUARE_STATE.vacant) {
                         break;
-                    } else if (this.grid[x + i * dx][y + i * dy] == turn) {
+                    } else if (this.grid[x + i * dx][y + i * dy] === turn) {
                         // Flip the disks between (x, y) and (x+i*dx, y+i*dy)
                         if (i > 1) {
                             for (let j = 1; j < i; ++j) {
-                                disksToReverse.push({
+                                disksToFlip.push({
                                     x: x + j * dx,
                                     y: y + j * dy
                                 });
@@ -94,7 +88,7 @@ class Reversi {
             }
         }
 
-        return disksToReverse;
+        return disksToFlip;
     }
 
     // Tries to pass the turn.
@@ -102,7 +96,7 @@ class Reversi {
     tryToPass(turn) {
         for (let x = 0; x < Reversi.GRID_SIZE; ++x) {
             for (let y = 0; y < Reversi.GRID_SIZE; ++y) {
-                if (this.getDisksToReverse(turn, x, y).length > 0) {
+                if (this.getDisksToFlip(turn, x, y).length > 0) {
                     return false;
                 }
             }
@@ -118,7 +112,6 @@ class Reversi {
             return false;
         }
 
-        this.updateScores();
         this.currentTurn = Reversi.TURN.computer;
         return true;
     }
@@ -132,7 +125,6 @@ class Reversi {
             return false;
         }
 
-        this.updateScores();
         return true;
     }
 
@@ -151,27 +143,18 @@ class Reversi {
         return [-1, -1];
     }
 
-    // Updates blackScore and whiteScore.
-    updateScores() {
-        let blackScoreCount = 0;
-        let whiteScoreCount = 0;
+    // Counts the number of disks of a certain color
+    countScore(turn) {
+        let scoreCount = 0;
 
         for (let x = 0; x < Reversi.GRID_SIZE; ++x) {
             for (let y = 0; y < Reversi.GRID_SIZE; ++y) {
-                switch (this.grid[x][y]) {
-                    case Reversi.SQUARE_STATE.black:
-                        ++blackScoreCount;
-                        break;
-                    case Reversi.SQUARE_STATE.white:
-                        ++whiteScoreCount;
-                        break;
-                    case Reversi.SQUARE_STATE.vacant:
+                if (this.grid[x][y] === turn) {
+                    ++scoreCount;
                 }
             }
         }
-
-        this.blackScore = blackScoreCount;
-        this.whiteScore = whiteScoreCount;
+        return scoreCount;
     }
 
     // If game is finished, returns the winner's id (1 or -1)
@@ -179,13 +162,13 @@ class Reversi {
     gameIsFinished() {
         for (let x = 0; x < Reversi.GRID_SIZE; ++x) {
             for (let y = 0; y < Reversi.GRID_SIZE; ++y) {
-                if (this.getDisksToReverse(Reversi.TURN.computer, x, y).length > 0 || this.getDisksToReverse(Reversi.TURN.player, x, y).length > 0) {
+                if (this.getDisksToFlip(Reversi.TURN.computer, x, y).length > 0 || this.getDisksToFlip(Reversi.TURN.player, x, y).length > 0) {
                     return 0;
                 }
             }
         }
         this.isFinished = true;
-        if (this.blackScore > this.whiteScore) {
+        if (scoreCount(Reversi.TURN.player > Reversi.TURN.computer)) {
             return Reversi.TURN.player;
         } else {
             return Reversi.TURN.computer;

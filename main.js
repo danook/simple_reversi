@@ -53,12 +53,12 @@ function updateScoreBoard() {
     const blackScoreElement = document.querySelector("#black_score");
     const whiteScoreElement = document.querySelector("#white_score");
 
-    blackScoreElement.innerHTML = `${reversi.blackScore}`;
-    whiteScoreElement.innerHTML = `${reversi.whiteScore}`;
+    blackScoreElement.innerHTML = `${reversi.countScore(Reversi.SQUARE_STATE.black)}`;
+    whiteScoreElement.innerHTML = `${reversi.countScore(Reversi.SQUARE_STATE.white)}`;
 }
 
 async function onClickSquare(x, y) {
-    if (reversi.isFinished || reversi.currentTurn != Reversi.TURN.player) {
+    if (reversi.isFinished || reversi.currentTurn !== Reversi.TURN.player) {
         return;
     }
 
@@ -71,10 +71,10 @@ async function onClickSquare(x, y) {
     renderGrid();
     switch (reversi.gameIsFinished()) {
         case Reversi.TURN.player:
-            showMessage("You Win!");
+            showMessage("You win!");
             return;
         case Reversi.TURN.computer:
-            showMessage("You Lose...");
+            showMessage("You lose...");
             return;
         case 0:
     }
@@ -84,7 +84,7 @@ async function onClickSquare(x, y) {
 }
 
 async function onClickPassButton() {
-    if (reversi.isFinished || reversi.currentTurn != Reversi.TURN.player) {
+    if (reversi.isFinished || reversi.currentTurn !== Reversi.TURN.player) {
         return;
     }
     if (!reversi.tryToPass(Reversi.TURN.player)) {
