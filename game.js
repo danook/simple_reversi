@@ -171,6 +171,23 @@ class Reversi {
         this.whiteScore = whiteScoreCount;
     }
 
+    // If game is finished, returns the winner's id (1 or -1)
+    // otherwise returns 0
+    gameIsFinished() {
+        for (let x = 0; x < Reversi.GRID_SIZE; ++x) {
+            for (let y = 0; y < Reversi.GRID_SIZE; ++y) {
+                if (this.getDisksToReverse(Reversi.TURN.computer, x, y).length > 0 || this.getDisksToReverse(Reversi.TURN.player, x, y).length > 0) {
+                    return 0;
+                }
+            }
+        }
+        if (this.blackScore > this.whiteScore) {
+            return Reversi.TURN.player;
+        } else {
+            return Reversi.TURN.computer;
+        }
+    }
+
     isInGrid(x, y) {
         return x >= 0 && x < Reversi.GRID_SIZE && y >= 0 && y < Reversi.GRID_SIZE;
     }

@@ -69,23 +69,18 @@ async function onClickSquare(x, y) {
 
     updateScoreBoard();
     renderGrid();
+    switch (reversi.gameIsFinished()) {
+        case Reversi.TURN.player:
+            showMessage("You Win!");
+            return;
+        case Reversi.TURN.computer:
+            showMessage("You Lose...");
+            return;
+        case 0:
+    }
     showMessage("Computer is thinking...");
 
-    const computerPlacesDiskResult = await new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve(reversi.computerPlacesDisk());
-        }, /* timeout = */ 500);
-    });
-
-    if (!computerPlacesDiskResult) {
-        showMessage("Computer passed.");
-        return;
-    }
-
-    updateScoreBoard();
-    renderGrid();
-    showMessage("It's your turn!");
-    return;
+    await renewForComputerTurn();
 }
 
 async function onClickPassButton() {
@@ -99,7 +94,10 @@ async function onClickPassButton() {
 
     showMessage("Passed.");
 
-    // TODO: Omit this redundant code?
+    await renewForComputerTurn();
+}
+
+async function renewForComputerTurn() {
     const computerPlacesDiskResult = await new Promise((resolve, reject) => {
         setTimeout(() => {
             resolve(reversi.computerPlacesDisk());
@@ -113,6 +111,15 @@ async function onClickPassButton() {
 
     updateScoreBoard();
     renderGrid();
+    switch (reversi.gameIsFinished()) {
+        case Reversi.TURN.player:
+            showMessage("Congratulations! You win!");
+            return;
+        case Reversi.TURN.computer:
+            showMessage("You lose...");
+            return;
+        case 0:
+    }
     showMessage("It's your turn!");
     return;
 }
