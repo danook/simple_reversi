@@ -20,6 +20,9 @@ class Reversi {
         // The human player cannot place a disk when currentTurn is computer.
         this.currentTurn = Reversi.TURN.player;
 
+        // If this is true, no user action is accepted
+        this.isFinished = false;
+
         this.blackScore = 0;
         this.whiteScore = 0;
 
@@ -169,6 +172,24 @@ class Reversi {
 
         this.blackScore = blackScoreCount;
         this.whiteScore = whiteScoreCount;
+    }
+
+    // If game is finished, returns the winner's id (1 or -1)
+    // otherwise returns 0
+    gameIsFinished() {
+        for (let x = 0; x < Reversi.GRID_SIZE; ++x) {
+            for (let y = 0; y < Reversi.GRID_SIZE; ++y) {
+                if (this.getDisksToReverse(Reversi.TURN.computer, x, y).length > 0 || this.getDisksToReverse(Reversi.TURN.player, x, y).length > 0) {
+                    return 0;
+                }
+            }
+        }
+        this.isFinished = true;
+        if (this.blackScore > this.whiteScore) {
+            return Reversi.TURN.player;
+        } else {
+            return Reversi.TURN.computer;
+        }
     }
 
     isInGrid(x, y) {
