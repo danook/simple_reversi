@@ -13,6 +13,18 @@ class Reversi {
         computer: -1
     };
 
+    // To obtain the score of each grid square
+    static SQUARE_SCORE = [
+        [150, -20, 8, 0, 0, 8, -20, 150],
+        [-20, -40, -6, -6, -6, -6, -40, -20],
+        [8, -6, 0, -1, -1, 0, -6, 8],
+        [0, -6, -1, -2, -2, -1, -6, 0],
+        [0, -6, -1, -2, -2, -1, -6, 0],
+        [8, -6, 0, -1, -1, 0, -6, 8],
+        [-20, -40, -6, -6, -6, -6, -40, -20],
+        [150, -20, 8, 0, 0, 8, -20, 150]
+    ];
+
     constructor() {
         Reversi.GRID_SIZE = 8;
 
@@ -124,7 +136,7 @@ class Reversi {
         if (x === -1 && y === -1) {
             return false;
         }
-
+        this.placeDisk(Reversi.TURN.computer, x, y);
         return true;
     }
 
@@ -132,15 +144,8 @@ class Reversi {
     // TODO: Introduce alpha-beta algorithm
     // Returns [x, y]. If it cannot put a disk, returns [-1, -1].
     getsSquareToPlaceDisk() {
-        const trials = 1000
-        for (let i = 0; i < trials; ++i) {
-            let x = Math.floor(Math.random() * Reversi.GRID_SIZE);
-            let y = Math.floor(Math.random() * Reversi.GRID_SIZE);
-            if (this.placeDisk(Reversi.TURN.computer, x, y)) {
-                return [x, y];
-            }
-        }
-        return [-1, -1];
+        const [x, y, score] = this.miniMax(Reversi.TURN.computer, 5, this.grid);
+        return [x, y];
     }
 
     // Counts the number of disks of a certain color
@@ -168,7 +173,7 @@ class Reversi {
             }
         }
         this.isFinished = true;
-        if (scoreCount(Reversi.TURN.player > Reversi.TURN.computer)) {
+        if (this.countScore(Reversi.TURN.player) > this.countScore(Reversi.TURN.computer)) {
             return Reversi.TURN.player;
         } else {
             return Reversi.TURN.computer;
@@ -177,5 +182,60 @@ class Reversi {
 
     isInGrid(x, y) {
         return x >= 0 && x < Reversi.GRID_SIZE && y >= 0 && y < Reversi.GRID_SIZE;
+    }
+
+    // Returns [x, y, score]
+    miniMax(turn, depth, grid) {
+
+        // Returns infinity if the game is finished
+        const isFinished = this.gameIsFinished();
+        if (isFinished !== 0) {
+            return [-1, -1, 10000000 * isFinished];
+        }
+
+        if (depth === 0) {
+            return [-1, -1, this.evaluateGridScore(grid)];
+        }
+
+        let bestMove = [-1, -1, 0];
+        for (let x = 0; x < Reversi.GRID_SIZE; ++x) {
+            for (let y = 0; y < Reversi.GRID_SIZE; ++y) {
+                const disksToFlip = this.getDisksToFlip(turn, x, y);
+                if (disksToFlip.length === 0) {
+                    continue;
+                }
+
+                let newgrid = new Array(Reversi.GRID_SIZE);
+                for (let i = 0; i < Reversi.GRID_SIZE; ++i) {
+                    newgrid[i] = Array.from(grid[i]);
+                }
+                newgrid[x][y] = turn;
+                for (const disk of disksToFlip) {
+                    newgrid[disk.x][disk.y] = turn;
+                }
+
+                const move = this.miniMax(-turn, depth - 1, newgrid);
+                if (bestMove[0] === -1 || (move[2] - bestMove[2]) * turn > 0) {
+                    bestMove = [x, y, move[2]];
+                }
+            }
+        }
+
+        // When bestMove has not been renewed, it means that computer has to pass its turn.
+        if (bestMove[0] === -1) {
+            return [-1, -1, this.miniMax(-turn, depth - 1, grid) - 200 * turn];
+        } else {
+            return bestMove;
+        }
+    }
+
+    evaluateGridScore(grid) {
+        let score = 0;
+        for (let x = 0; x < Reversi.GRID_SIZE; ++x) {
+            for (let y = 0; y < Reversi.GRID_SIZE; ++y) {
+                score += grid[x][y] * Reversi.SQUARE_SCORE[x][y];
+            }
+        }
+        return score;
     }
 }

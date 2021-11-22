@@ -101,7 +101,7 @@ async function renewForComputerTurn() {
     const computerPlacesDiskResult = await new Promise((resolve, reject) => {
         setTimeout(() => {
             resolve(reversi.computerPlacesDisk());
-        }, /* timeout = */ 500);
+        }, /* timeout = */ 200);
     });
 
     if (!computerPlacesDiskResult) {
