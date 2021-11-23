@@ -1,3 +1,7 @@
+* {
+    font-family: Verdana, Geneva, Tahoma, sans-serif
+}
+
 body {
     background-color: #F6F6E9;
     margin: 0px;
@@ -26,6 +30,7 @@ main {
 
 .game_screen {
     background-color: #D7EEF2;
+    min-width: 420px;
     display: flex;
     justify-content: space-around;
     align-items: flex-end;

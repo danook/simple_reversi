@@ -1,0 +1,18 @@
+@media screen and (max-width: 720px) {
+    .game_screen {
+        display: block;
+    }
+
+    .grid {
+        margin: 32px auto;
+    }
+
+    .sidebar {
+        margin: 32px auto;
+    }
+
+    .score_text_container {
+        display: flex;
+        justify-content: space-between;
+    }
+}
